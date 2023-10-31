@@ -75,8 +75,6 @@ menjalankan foreground dan detach/deamon dengan container
 =================================
 menggunakan mysql cli pada container dan link ke mariadb container
 - docker ps -a
-- docker run -it --link mymariadb:mysql --run mysql mysql -hmysql -uroot -ptoor
-atau
 - docker run -it --link mymariadb:mysql --rm mysql mysql -h"mysql" -uroot -ptoor
 PENJELASAN DARI PERINTAH INI
 docker run: Ini adalah perintah Docker untuk menjalankan kontainer.
@@ -167,3 +165,26 @@ Membuat docker volume di docker
 $ docker run --rm -d -p 82:80 -v /home/melky/lab02/html:/usr/share/nginx/html --name lab02-nginx nginx
 $ docker ps -a
 $ curl locahost:82
+
+Atau juga bisa membuat volume terlebih dahulu didocker
+$ docker create volume volume-container 
+(volume-container) adalah nama volume yang dibuat
+$ docker volume inspect volume-container
+untuk melihat detail dari volume (termasuk lokasi folder dari volume)
+$ docker run -d --name lab3-nginx -p 84:80 -v docker-volume:/usr/share/nginx/html nginx
+Perintah ini akan membuat container dengan lab3-nginx port host 84 dan port container 80 docker-volume(adalah nama volume yang sudah dicreate) yang di bind ke folder container dari nginx yaitu /usr/share/nginx/html
+=========================================
+
+Untuk melihat kinerja dari container 
+$ docker stats
+$ docker stats nama-container
+CONTAINER ID   NAME           CPU %     MEM USAGE / LIMIT     MEM %     NET I/O           BLOCK I/O         PIDS
+- CONTAINER ID: Ini adalah ID unik yang diberikan kepada setiap kontainer saat kontainer dibuat. ID ini digunakan untuk mengidentifikasi kontainer secara unik. Contoh: eb557c2a96fd.
+- NAME: Ini adalah nama yang diberikan kepada kontainer saat kontainer dibuat. Nama ini membantu dalam mengidentifikasi kontainer dengan cara yang lebih mudah dibandingkan dengan menggunakan ID. Contoh: lab3-nginx.
+- CPU %: Ini menunjukkan penggunaan CPU oleh kontainer sebagai persentase. Nilai ini mencerminkan seberapa intensif kontainer menggunakan CPU pada saat itu. Contoh: 0.00% berarti penggunaan CPU saat ini adalah 0%.
+- MEM USAGE / LIMIT: Ini menggambarkan penggunaan memori oleh kontainer dan batasan (limit) yang telah ditetapkan untuk kontainer tersebut. Ini termasuk dua angka, yaitu penggunaan memori saat ini dan batasan yang telah diatur. Contoh: 58.64MiB / 7.764GiB berarti kontainer saat ini menggunakan sekitar 58.64 MiB dari memori yang tersedia, dan batasan memori yang ditetapkan untuk kontainer adalah 7.764 GiB.
+- MEM %: Ini menunjukkan penggunaan memori oleh kontainer sebagai persentase dari batasan yang telah ditetapkan. Persentase ini mencerminkan seberapa banyak memori yang sedang digunakan oleh kontainer dibandingkan dengan batasan yang telah diatur. Contoh: 0.74% berarti penggunaan memori saat ini adalah 0.74% dari batasan yang ditetapkan.
+- NET I/O: Ini mencakup penggunaan jaringan oleh kontainer, termasuk jumlah data yang dikirim (TX - transmit) dan diterima (RX - receive) melalui jaringan. Ini mengindikasikan lalu lintas jaringan yang dihasilkan oleh kontainer pada saat tertentu. Contoh: 1.67kB / 1.43kB berarti kontainer telah mengirim 1.67 kB data dan menerima 1.43 kB data melalui jaringan.
+- BLOCK I/O: Ini menggambarkan penggunaan I/O blok oleh kontainer, yang mencakup berapa banyak data yang ditulis (write) dan dibaca (read) dari penyimpanan blok. Ini menunjukkan aktivitas penyimpanan kontainer. Contoh: 3.06MB / 16.4kB berarti kontainer telah menulis 3.06 MB data dan membaca 16.4 kB data dari penyimpanan blok.
+- PIDS: Ini menunjukkan jumlah proses yang berjalan di dalam kontainer. Jumlah ini mencerminkan aktivitas proses di dalam kontainer pada saat tertentu. Contoh: 9 berarti kontainer memiliki 9 proses yang berjalan.
+
