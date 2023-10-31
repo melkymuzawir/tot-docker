@@ -1,0 +1,169 @@
+Proses Installasi Docker di Ubuntu 22.04
+
+- Jalankan Perintah berikut
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+- Langkah Ke 2
+
+echo \
+  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+
+- Langkah Ke 3
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+- mengecek status docker
+systemctl status docker
+
+============================================
+optional
+- membuat user & group docker
+sudo -i
+adduser docker
+usermod -aG sudo docker melky
+id melky
+=======================================
+- Langkah Ke 4
+sudo docker run hello-world
+
+- Langka ke 5 Mencari image & download docker via terminal
+sudo docker search alpine
+sudo docker pull alpine
+sudo docker images (melihat list image yang sudah didownload atau yang ada dilokal)
+
+sudo docker ps -a
+1 membuat container dari image alpine(random name)
+- docker crate apline
+- docker ps -a
+
+2. membuat container dengan menentukan nama containernya
+- sudo docker create --name container-alpine -it alpine (-it = interaktif "Ini akan membuka shell Ubuntu dalam kontainer dan memungkinkan Anda untuk berinteraksi langsung dengan shell tersebut")
+- sudo docker ps -a
+- sudo docker attach container-alpine (masuk kedalam kontainer dari alpine)
+- sudo docker exec container-alpine cat /etc/passwd
+
+- sudo dokcer rm container-alpine
+(akan error karena container sedang berjalan)
+(caranya stop terlebih dahulu containernya"docker stop container-alpine")
+atau juga bisa menggunakan perintah 
+docker rm -f container-alpine
+
+===============================
+cara menjalankan pull, create, start, run container dengan satu perintah
+- docker ps -a
+- docker run debian hostname
+(akan menampilkan hostname dari debian & selanjutnya stop container )
+
+===============================
+cara menjalankan pull, create start, run aplikasi dengan satu perintah dan menghapus container jika sudah selesai
+- docker images
+- docker ps -a
+- docker run --rm debian date
+- docker images
+
+================================
+menjalankan foreground dan detach/deamon dengan container
+- docker images
+- docker ps -a
+- docker run --name mymariadb -e MYSQL_ROOT_PASSWORD=toor -p 3306:3306 -d mariadb
+=================================
+menggunakan mysql cli pada container dan link ke mariadb container
+- docker ps -a
+- docker run -it --link mymariadb:mysql --run mysql mysql -hmysql -uroot -ptoor
+atau
+- docker run -it --link mymariadb:mysql --rm mysql mysql -h"mysql" -uroot -ptoor
+PENJELASAN DARI PERINTAH INI
+docker run: Ini adalah perintah Docker untuk menjalankan kontainer.
+
+-it: Opsi ini digunakan untuk menjalankan kontainer dalam mode interaktif (interactive) sehingga Anda dapat berinteraksi dengan kontainer. Ini mencakup terminal interaktif (tty) yang akan digunakan untuk berkomunikasi dengan kontainer.
+
+--link mymariadb:mysql: Opsi --link digunakan untuk menghubungkan kontainer saat ini (yang berisi MySQL Client) ke kontainer lain (MariaDB) dengan nama "mymariadb." Ini memungkinkan kontainer saat ini untuk berkomunikasi dengan kontainer "mymariadb" dengan menggunakan nama "mysql" sebagai hostname. Dengan kata lain, kontainer MySQL Client akan dapat meresolusi nama "mysql" menjadi alamat IP dari kontainer MariaDB.
+
+--rm: Opsi ini digunakan untuk menghapus kontainer setelah selesai dijalankan, sehingga kontainer tersebut tidak akan menyisakan jejak setelah Anda selesai menggunakan MySQL Client.
+
+mysql: Ini adalah nama gambar Docker yang berisi MySQL Client. Jika gambar ini belum ada di sistem Anda, Docker akan mengunduhnya secara otomatis.
+
+mysql -h"mysql" -uroot -ptoor: Ini adalah perintah yang akan dijalankan di dalam kontainer MySQL Client setelah kontainer dijalankan. Perintah ini memiliki beberapa bagian:
+
+-h"mysql": Mengatur host yang akan dihubungi oleh MySQL Client. Dalam konteks ini, "mysql" adalah nama yang digunakan untuk merujuk ke kontainer MariaDB yang dihubungkan melalui opsi --link.
+-uroot: Mengidentifikasi pengguna MySQL sebagai "root."
+-ptoor: Mengidentifikasi bahwa kata sandi yang akan digunakan adalah "toor." Kata sandi yang sesuai dengan kata sandi root yang telah Anda set pada server MariaDB di kontainer "mymariadb."
+===========================================
+
+selanjutnya 
+mysql> create database mydb;
+mysql> use mydb;
+mysql> create table peserta (id int, nama varchar(50), email varchar(50));
+mysql> desc peserta;
+mysql> insert into peserta values (1, 'melky', 'melky@usk.ac.id'), (2, 'muzawir', 'muzawir@usk.ac.id');
+mysql> select * from peserta;
+mysql> exit;
+$ docker ps -a
+
+==========================================================================================================================
+cara start, stop dan menghapus container
+$ docker ps -a
+$ docker stop mariadb
+$ docker ps -a
+=============================
+cara mengaktifkan container dengan status exit
+$ docker ps -a
+$ docker start mariadb
+$ docker ps -a
+=============================
+cara menghapus container dengan status exit
+$ docker ps -a
+$ docker rm mariadb
+(akan muncul pesen error karena container dalam state up)
+$ docker rm -f mariadb
+$ docker ps -a
+==============================
+menghapus semua container dengan status stop
+$ docker ps -a
+$ docker container prune
+$ docker ps -a
+===============================
+menghapus semua container dengan status apapun
+$ docker ps -a
+$ docker rm -f $(docker ps -aq)
+===============================
+cara menampilkan informasi detail dari container
+$ docker inspect alpine
+===============================
+
+build images dari container
+$ docker images
+$ docker ps -a
+$ docker images
+$ docker run --name lab-nginx --rm -d -p 80:80 nginx
+$ curl localhost
+=================================
+
+mengubah container dengan mencopy file index.html dari host menggunakan default index.html container
+$ cd /home/melky
+$ mkdir -p lab-nginx/html
+$ cd lab-ngin/
+$ vim html/index.html
+<h1>Welcome to Container NGINX</h1>
+$ docker cp ./html/index.html container-nginx:/usr/share/nginx/html/index.html
+$ curl localhost
+=======================================
+
+membuat image berdasarkan container
+$ docker images
+$ docker ps -a
+$ docker commit container-nginx melkymuzawir/nginx:latest
+$ docker kill container-nginx
+$ docker ps -a
+$ docker images
+=======================================
+Membuat docker volume di docker
+$ docker run --rm -d -p 82:80 -v /home/melky/lab02/html:/usr/share/nginx/html --name lab02-nginx nginx
+$ docker ps -a
+$ curl locahost:82
